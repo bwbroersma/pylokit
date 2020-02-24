@@ -7,7 +7,7 @@ cpython3, and pypy. LibreOfficeKit currently works only on Linux systems.
 Requirements
 ------------
 
-An installation of LibreOffice >= 4.3.0 is required on the same machine.
+An installation of LibreOffice >= 4.3.0 is required on the same machine (LibreOffice >= 6.0 for `runMacro` and `getVersionInfo`).
 
 If you are using cpython you need *libffi-dev* in order to compile CFFI.
 

@@ -20,6 +20,10 @@ typedef struct _LibreOfficeKitClass LibreOfficeKitClass;
 typedef struct _LibreOfficeKitDocument LibreOfficeKitDocument;
 typedef struct _LibreOfficeKitDocumentClass LibreOfficeKitDocumentClass;
 
+typedef void (*LibreOfficeKitCallback)(int nType, const char* pPayload, void* pData);
+typedef int (*LibreOfficeKitPollCallback)(void* pData, int timeoutUs);
+typedef void (*LibreOfficeKitWakeCallback)(void* pData);
+
 struct _LibreOfficeKit
 {
     LibreOfficeKitClass* pClass;
@@ -29,9 +33,19 @@ struct _LibreOfficeKitClass
 {
   size_t  nSize;
 
-  void                    (*destroy)       (LibreOfficeKit *pThis);
-  LibreOfficeKitDocument* (*documentLoad)  (LibreOfficeKit *pThis, const char *pURL);
-  char*                   (*getError)      (LibreOfficeKit *pThis);
+  void                    (*destroy)                 (LibreOfficeKit *pThis);
+  LibreOfficeKitDocument* (*documentLoad)            (LibreOfficeKit *pThis, const char *pURL);
+  char*                   (*getError)                (LibreOfficeKit *pThis);
+  LibreOfficeKitDocument* (*documentLoadWithOptions) (LibreOfficeKit *pThis, const char *pURL, const char *pOptions);
+  void                    (*freeError)               (char *pFree);
+  void                    (*registerCallback)        (LibreOfficeKit *pThis, LibreOfficeKitCallback pCallback, void *pData);
+  char*                   (*getFilterTypes)          (LibreOfficeKit *pThis);
+  void                    (*setOptionalFeatures)     (LibreOfficeKit *pThis, unsigned long long features);
+  void                    (*setDocumentPassword)     (LibreOfficeKit *pThis, char const *pURL, char const *pPassword);
+  char*                   (*getVersionInfo)          (LibreOfficeKit *pThis);
+  int                     (*runMacro)                (LibreOfficeKit *pThis, const char *pURL);
+  bool                    (*signDocument)            (LibreOfficeKit *pThis, const char *pUrl, const unsigned char *pCertificateBinary, const int nCertificateBinarySize, const unsigned char *pPrivateKeyBinary, const int nPrivateKeyBinarySize);
+  void                    (*runLoop)                 (LibreOfficeKit *pThis, LibreOfficeKitPollCallback pPollCallback, LibreOfficeKitWakeCallback pWakeCallback, void *pData);
 };
 
 struct _LibreOfficeKitDocument
@@ -117,6 +131,12 @@ class Office(object):
 
     def getError(self):
         return self.ffi.string(self.lokit.pClass.getError(self.lokit))
+
+    def getVersionInfo(self):
+        return self.ffi.string(self.lokit.pClass.getVersionInfo(self.lokit))
+
+    def runMacro(self, url):
+        return self.lokit.pClass.runMacro(self.lokit, six.b(url)) == 1
 
     def __enter__(self):
         return self
